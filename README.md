@@ -33,14 +33,3 @@ You can integrate this clock into any web page or Notion workspace via an `ifram
 </iframe>
 ```
 
----
-
-## Local Development
-
-Start a local server to test and scale the widget:
-
-```bash
-python3 -m http.server 8000
-```
-
-Open `http://localhost:8000/embed_example.html` in your browser.

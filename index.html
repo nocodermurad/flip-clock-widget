@@ -11,21 +11,21 @@
     :root {
       --bg-color: #FFFFFF;
       --card-bg: #F4F4F4;
-      --text-primary: #000000;
-      --text-secondary: #6B6B6B;
-      --divider-color: rgba(0, 0, 0, 0.08);
-      --border-style: 1px solid rgba(0, 0, 0, 0.08);
+      --text-primary: #37352F;
+      --text-secondary: rgba(55, 53, 47, 0.6);
+      --divider-color: rgba(55, 53, 47, 0.09);
+      --border-style: 1px solid rgba(55, 53, 47, 0.09);
       --clock-padding: 24px; /* Fixed adjustable padding */
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg-color: #000000;
-        --card-bg: #141414;
-        --text-primary: #FFFFFF;
-        --text-secondary: #A1A1A1;
-        --divider-color: rgba(255, 255, 255, 0.12);
-        --border-style: 1px solid rgba(255, 255, 255, 0.12);
+        --bg-color: #191919;
+        --card-bg: #222222;
+        --text-primary: #D4D4D4;
+        --text-secondary: rgba(255, 255, 255, 0.4);
+        --divider-color: rgba(255, 255, 255, 0.1);
+        --border-style: 1px solid rgba(255, 255, 255, 0.1);
       }
     }
 
@@ -46,6 +46,8 @@
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
       overflow: hidden;
       padding: var(--clock-padding);
+      /* 12px outer screen rounding */
+      border-radius: 12px;
     }
 
     .clock-wrapper {

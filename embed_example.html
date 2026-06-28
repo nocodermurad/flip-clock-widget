@@ -5,6 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Flip Clock Embed Demo</title>
   <style>
+    :root {
+      --page-bg: #FFFFFF;
+      --card-bg: #F4F4F4;
+      --text-primary: #37352F;
+      --text-secondary: rgba(55, 53, 47, 0.6);
+      --border-style: 1px solid rgba(55, 53, 47, 0.09);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page-bg: #191919;
+        --card-bg: #222222;
+        --text-primary: #D4D4D4;
+        --text-secondary: rgba(255, 255, 255, 0.4);
+        --border-style: 1px solid rgba(255, 255, 255, 0.1);
+      }
+    }
+
     body {
       margin: 0;
       padding: 0;
@@ -13,15 +31,9 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      background-color: #F8F9FA;
+      background-color: var(--page-bg);
+      color: var(--text-primary);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      body {
-        background-color: #121212;
-        color: #F8F9FA;
-      }
     }
 
     .demo-container {
@@ -34,19 +46,11 @@
     .widget-container {
       width: 100%;
       height: 250px;
-      border: 1px solid rgba(0, 0, 0, 0.08);
+      border: var(--border-style);
       border-radius: 12px;
       overflow: hidden;
-      background: #FFFFFF;
+      background: var(--page-bg);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .widget-container {
-        border-color: rgba(255, 255, 255, 0.12);
-        background: #000000;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      }
     }
 
     iframe {
@@ -54,6 +58,7 @@
       height: 100%;
       border: none;
       display: block;
+      border-radius: 12px; /* Rounds the inner iframe viewport */
     }
 
     h1 {
@@ -61,19 +66,14 @@
       font-weight: 600;
       margin-bottom: 8px;
       text-align: center;
+      color: var(--text-primary);
     }
 
     p {
       font-size: 14px;
-      color: #6B6B6B;
+      color: var(--text-secondary);
       margin-bottom: 24px;
       text-align: center;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      p {
-        color: #A1A1A1;
-      }
     }
   </style>
 </head>

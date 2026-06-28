@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flip Clock</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #FFFFFF;
+      --card-bg: #F4F4F4;
+      --text-primary: #000000;
+      --text-secondary: #6B6B6B;
+      --divider-color: rgba(0, 0, 0, 0.08);
+      --border-style: 1px solid rgba(0, 0, 0, 0.08);
+      --clock-padding: 24px; /* Fixed adjustable padding */
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-color: #000000;
+        --card-bg: #141414;
+        --text-primary: #FFFFFF;
+        --text-secondary: #A1A1A1;
+        --divider-color: rgba(255, 255, 255, 0.12);
+        --border-style: 1px solid rgba(255, 255, 255, 0.12);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: var(--bg-color);
+      color: var(--text-primary);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      overflow: hidden;
+      padding: var(--clock-padding);
+    }
+
+    .clock-wrapper {
+      display: flex;
+      gap: 0.15em;
+      align-items: center;
+      justify-content: center;
+      font-size: 100px; /* Scaling target resized dynamically via JS */
+      line-height: 1;
+    }
+
+    .flip-card {
+      position: relative;
+      width: 1.8em;
+      height: 2em;
+      perspective: 1000px;
+      border: var(--border-style);
+      border-radius: 12px;
+      background-color: var(--card-bg);
+      box-sizing: content-box;
+      overflow: hidden;
+      /* Webkit-specific fix for 3D card layout masking */
+      transform: translateZ(0);
+      will-change: transform;
+    }
+
+    .card-half {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 50%;
+      overflow: hidden;
+      background-color: var(--card-bg);
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Redundant safety rounding for browsers with 3D transform mask rendering bugs */
+    .card-top {
+      top: 0;
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+    }
+
+    .card-bottom {
+      bottom: 0;
+      border-bottom-left-radius: 12px;
+      border-bottom-right-radius: 12px;
+    }
+
+    /* Content styling and text position alignment */
+    .card-content {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 2em; /* Matches parent outer height exactly */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .card-top .card-content {
+      top: 0;
+    }
+
+    .card-bottom .card-content {
+      bottom: 0;
+    }
+
+    .num {
+      font-size: 1.25em;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      color: var(--text-primary);
+    }
+
+    /* AM/PM indicator positioned statically in the top-left of the hours card */
+    .ampm-label {
+      position: absolute;
+      top: 0.16em;
+      left: 0.16em;
+      font-size: 0.18em;
+      font-weight: 600;
+      color: var(--text-secondary);
+      z-index: 10;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Crisp, non-blurry divider positioned directly on the pixel grid */
+    .card-divider {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background-color: var(--divider-color);
+      z-index: 5;
+    }
+
+    /* Transitioning card halves */
+    .flap-top {
+      top: 0;
+      transform-origin: bottom center;
+      z-index: 3;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+    }
+
+    .flap-bottom {
+      bottom: 0;
+      transform-origin: top center;
+      z-index: 2;
+      transform: rotateX(90deg);
+      opacity: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+    }
+
+    /* Class applications for active transitions */
+    .flip-card.flipping .flap-top {
+      transform: rotateX(-90deg);
+      opacity: 0;
+    }
+
+    .flip-card.flipping .flap-bottom {
+      transform: rotateX(0deg);
+      opacity: 1;
+      z-index: 4;
+    }
+  </style>
+</head>
+<body>
+  <div class="clock-wrapper">
+    <!-- Hours Card -->
+    <div class="flip-card" id="hours-card">
+      <div class="ampm-label" id="ampm">AM</div>
+      
+      <!-- Static background halves -->
+      <div class="card-half card-top static">
+        <div class="card-content">
+          <span class="num">12</span>
+        </div>
+      </div>
+      <div class="card-half card-bottom static">
+        <div class="card-content">
+          <span class="num">12</span>
+        </div>
+      </div>
+      
+      <!-- Flipping flaps -->
+      <div class="card-half card-top flap-top">
+        <div class="card-content">
+          <span class="num">12</span>
+        </div>
+      </div>
+      <div class="card-half card-bottom flap-bottom">
+        <div class="card-content">
+          <span class="num">12</span>
+        </div>
+      </div>
+      
+      <!-- Center divider line -->
+      <div class="card-divider"></div>
+    </div>
+    
+    <!-- Minutes Card -->
+    <div class="flip-card" id="minutes-card">
+      <!-- Static background halves -->
+      <div class="card-half card-top static">
+        <div class="card-content">
+          <span class="num">00</span>
+        </div>
+      </div>
+      <div class="card-half card-bottom static">
+        <div class="card-content">
+          <span class="num">00</span>
+        </div>
+      </div>
+      
+      <!-- Flipping flaps -->
+      <div class="card-half card-top flap-top">
+        <div class="card-content">
+          <span class="num">00</span>
+        </div>
+      </div>
+      <div class="card-half card-bottom flap-bottom">
+        <div class="card-content">
+          <span class="num">00</span>
+        </div>
+      </div>
+      
+      <!-- Center divider line -->
+      <div class="card-divider"></div>
+    </div>
+  </div>
+  
+  <script>
+    function formatTime(val) {
+      return val.toString().padStart(2, '0');
+    }
+
+    function updateCard(cardElement, newValue) {
+      const currentValue = cardElement.getAttribute('data-value');
+      if (currentValue === newValue) return;
+      
+      cardElement.setAttribute('data-value', newValue);
+      
+      const staticTop = cardElement.querySelector('.card-top.static .num');
+      const staticBottom = cardElement.querySelector('.card-bottom.static .num');
+      const flapTop = cardElement.querySelector('.flap-top .num');
+      const flapBottom = cardElement.querySelector('.flap-bottom .num');
+      
+      // Initialize immediately on startup without animation
+      if (!currentValue) {
+        staticTop.textContent = newValue;
+        staticBottom.textContent = newValue;
+        flapTop.textContent = newValue;
+        flapBottom.textContent = newValue;
+        return;
+      }
+      
+      // 1. Prepare states
+      staticTop.textContent = newValue;
+      staticBottom.textContent = currentValue;
+      flapTop.textContent = currentValue;
+      flapBottom.textContent = newValue;
+      
+      // 2. Trigger animation
+      cardElement.classList.remove('flipping');
+      void cardElement.offsetWidth; // Force reflow
+      cardElement.classList.add('flipping');
+      
+      // 3. Sync and reset after animation completes
+      setTimeout(() => {
+        staticBottom.textContent = newValue;
+        flapTop.textContent = newValue;
+        flapBottom.textContent = newValue;
+        cardElement.classList.remove('flipping');
+      }, 250);
+    }
+
+    function updateClock() {
+      const now = new Date();
+      
+      let hours = now.getHours();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      
+      const hoursStr = formatTime(hours);
+      const minutesStr = formatTime(now.getMinutes());
+      
+      updateCard(document.getElementById('hours-card'), hoursStr);
+      updateCard(document.getElementById('minutes-card'), minutesStr);
+      
+      const ampmElement = document.getElementById('ampm');
+      if (ampmElement.textContent !== ampm) {
+        ampmElement.textContent = ampm;
+      }
+    }
+
+    // Dynamic Font-Size Scaling (Auto-Fit & Responsive)
+    const wrapper = document.querySelector('.clock-wrapper');
+    function resizeClock() {
+      // Fetch dynamic padding value from CSS variables to account for margins
+      const rootStyle = getComputedStyle(document.documentElement);
+      const paddingVar = rootStyle.getPropertyValue('--clock-padding').trim() || '24px';
+      const padding = parseFloat(paddingVar) || 24;
+
+      const width = (document.documentElement.clientWidth || window.innerWidth) - (padding * 2);
+      const height = (document.documentElement.clientHeight || window.innerHeight) - (padding * 2);
+      
+      // Clock bounding box is 3.75em x 2em content box.
+      // Scaling font-size to fill 92% of the usable container boundaries
+      const sizeByWidth = (width * 0.92) / 3.75;
+      const sizeByHeight = (height * 0.92) / 2.0;
+      
+      // Math.floor guarantees targetSize is an integer, forcing heights to be exact pixels.
+      // This prevents sub-pixel rounding mismatches and gap alignment issues completely.
+      const targetSize = Math.floor(Math.min(sizeByWidth, sizeByHeight));
+      wrapper.style.fontSize = `${targetSize}px`;
+    }
+
+    if (window.ResizeObserver) {
+      const observer = new ResizeObserver(() => resizeClock());
+      observer.observe(document.body);
+    } else {
+      window.addEventListener('resize', resizeClock);
+    }
+    
+    // Initial and execution calls
+    updateClock();
+    resizeClock();
+    setInterval(updateClock, 1000);
+  </script>
+</body>
+</html>
